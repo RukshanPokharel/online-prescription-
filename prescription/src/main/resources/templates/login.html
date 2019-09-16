@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>prescription</title>
+   <link rel="stylesheet"  href="/login.css"></link>
+   <!-- Vue -->
+   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<form action="">
+  
+  <div class="container" id="login">
+	<h2 style="text-align:center; color:grey">Please Sign In</h2>
+  
+  	<p style="color:red">{{ message }}</p>
+    <label for="username"><b></b></label>
+    <input v-model="user.userName" type="text" placeholder="User Name" name="username"/><br/>
+
+    <label for="pwd"><b></b></label>
+    <input v-model="user.password" type="password" placeholder="Password" name="pwd"/><br/>
+
+	<h3 style="text-align:center; color:grey">Sign In as</h3>
+	<input v-model="signInAs" type="radio" value="doctor"> Doctor </input>
+	<input v-model="signInAs" type="radio" value="patient" checked="checked"> Patient</input> <br/>
+  
+    <button v-on:click="doLogin" type="submit">Sign In</button><br/><br/>
+    
+	<span class="psd">Not a user? <a href="signupPatient">SignUp as patient</a></span><br/>
+	OR
+	<span class="psd"> <a href="signupDoctor">SignUp as doctor</a></span><br/><br/>
+	
+	<div class="copyright">
+	&copy;2017-2018
+    </div>
+  </div>
+
+</form>
+</body>
+
+<script>
+      var vm = new Vue({
+        el: '#login',
+        data: {
+          message:'',
+          user: {},
+          signInAs:''
+        },
+        methods: {
+        	doLogin:function(e){
+        		e.preventDefault();
+                var vm = this;
+                
+                if(vm.signInAs == 'patient'){
+            		this.loginPatient(e);
+                }else if(vm.signInAs == 'doctor'){
+                	this.loginDoctor(e);
+                }
+        	},
+        
+        	loginPatient: function(e){
+                var vm = this;
+                axios.post('/login/patient', vm.user)
+                .then(function (response) {
+                	window.location.href = '/patient/'+response.data.id;
+                })
+                .catch(function (error) {
+                 vm.message="Incorrect username or password!"
+                });
+        	},
+        	
+        	loginDoctor: function(e){
+                var vm = this;
+                axios.post('/login/doctor', vm.user)
+                .then(function (response) {
+                	window.location.href = '/doctor/'+response.data.id;
+                })
+                .catch(function (error) {
+                 vm.message="Incorrect username or password!"
+                });
+        	}
+        }
+      })
+</script>
+
+</html>

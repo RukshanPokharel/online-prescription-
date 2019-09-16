@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>prescription</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+
+<!-- Bootstrap -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- Vue -->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+
+<form action="">
+  
+  <div id="signup" class="row">
+	<div class="col-md-6 col-sm-12 col-lg-6 col-md-offset-3">
+		<div class="panel panel-primary">
+			<div class="panel-heading">Enter Your Details Here</div>
+			<div class="panel-body">
+			
+			<p v-if="errors.length">
+		        <b>Please correct the following error(s):</b>
+		        <ul>
+		          <li v-for="error in errors">{{ error }}</li>
+		        </ul>
+			</p>
+			
+				<form name="myform">
+					<div class="form-group">
+						<label for="fullName">Full Name *</label>
+						<input v-model="patient.fullName" name="fullName" id="fullName"  class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="dob">Date Of Birth *</label>
+						<input v-model="patient.dob" id="dob" name="dob" class="form-control" type="date" max="2017-04-30"></input>
+					</div>
+					<div class="form-group">
+						<label for="gender">Gender</label>
+						<select v-model="patient.gender" name="gender" id="gender" class="form-control">
+							<option selected="true">Male</option>
+							<option>Female</option>
+							<option>Other</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="phone">Phone Number *</label>
+						<input v-model="patient.phoneNumber" type="text" id="phone" name="phone" class="form-control" ></input>
+					</div>
+					<div class="form-group">
+						<label for="myName">Email address</label>
+						<input v-model="patient.email" id="email" name="email" class="form-control" type="text"></input>
+					</div>
+					
+					<div class="form-group">
+						<label for="age">Age *</label>
+						<input v-model="patient.age" id="age" name="age" class="form-control" type="text" ></input>
+						
+					</div>
+					
+					<div class="form-group">
+						<label for="disease">Disease *</label>
+						<input v-model="patient.disease" id="disease" name="disease" class="form-control" type="text" ></input>
+					</div>
+					
+					<div class="form-group">
+						<label for="address">Address *</label>
+						<input v-model="address.addressLine1" id="addressLine1" name="addressLine1" class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="address">City *</label>
+						<input v-model="address.city" id="city" name="city" class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="address">State *</label>
+						<input v-model="address.state" id="state" name="state" class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="userName">User Name *</label>
+						<input v-model="patient.userName" id="userName" name="userName" class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="password">Password *</label>
+						<input id="password" name="password" class="form-control" type="password"></input>
+					</div>
+				
+					<div class="form-group">
+						<label for="repeatPassword">Repeat Password *</label>
+						<input v-model="patient.password" id="repeatPassword" name="repeatPassword" class="form-control" type="password" ></input>
+					</div>
+					
+					<button v-on:click="postPatient" id="submit" type="submit" value="submit" class="btn btn-primary center">Submit</button>
+			
+			
+				</form>
+
+			</div>
+		</div>
+	</div>
+  </div>
+
+</form>
+</body>
+
+
+
+<script>
+	
+      var vm = new Vue({
+        el: '#signup',
+        data: {
+          message:'',
+          patient:{},
+          address: {},
+          errors:[]
+        },
+        methods: {
+        	
+        	checkForm:function() {
+                var vm = this;
+                   
+                   this.errors = [];
+                   if(!vm.patient.fullName) vm.errors.push("Name required.");
+                   if(!vm.patient.email) vm.errors.push("Email required.");
+                   if(!vm.patient.phoneNumber) vm.errors.push("Phone required.");
+                   if(!vm.patient.age) vm.errors.push("Age required.");
+                   
+                   if(!$.isNumeric(vm.patient.phoneNumber)) vm.errors.push("Phone no must be numeric");
+                   if(!(vm.patient.phoneNumber > 0)) vm.errors.push("Phone no must be whole number");
+                   
+                   if(!$.isNumeric(vm.patient.age)) vm.errors.push("Age must be numeric");
+                   if(!(vm.patient.age > 0)) vm.errors.push("Age must be whole number");
+                   
+                   if(!vm.address.addressLine1) vm.errors.push("AddressLine1 required.");
+                   if(!vm.address.city) vm.errors.push("City required.");
+                   if(!vm.address.state) vm.errors.push("State required.");
+                   if(!vm.patient.userName) vm.errors.push("Username required.");
+                   if(!vm.patient.password) vm.errors.push("Password required.");
+                   
+                   if( vm.errors.length == 0){
+                       return true;
+                        }else {
+                           return false;
+                        }
+                 },
+        	
+        	postPatient:function(e){
+        		e.preventDefault();
+        		
+        		 if(!this.checkForm()){
+                     return;
+                 }
+        		
+                var vm = this;
+                vm.patient.address = vm.address
+                axios.post('/patient',
+				  vm.patient
+                )
+                .then(function (response) {
+                  vm.message="user successfully saved!!";
+                  window.location.href = '/'
+                })
+                .catch(function (error) {
+                 vm.message=error.response.data
+                });
+
+        	}
+        }
+      })
+</script>
+</html>

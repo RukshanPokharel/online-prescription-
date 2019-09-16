@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Prescription Management System</title>
+<meta charset="utf-8"></meta>
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+
+<link rel="stylesheet"	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+<link rel="stylesheet"	href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"></link>
+<link rel="stylesheet" href="/main.css"></link>
+
+<!-- Bootstrap -->
+<script	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- jquery -->
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<!-- Google Chart -->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+	google.load("visualization", "1", {packages:["corechart","table","line"]});
+	google.setOnLoadCallback(this.drawChart);
+</script>
+
+<!-- Vue -->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<style>
+.column {
+	float: left;
+}
+
+/* Clear floats after the columns */
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.form-group {
+	width: 365px;
+}
+</style>
+</head>
+
+<body>
+	<div id="analytics">
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand " href="#"><img src="/analytics-200.png" /></a>
+				</div>
+				<ul class="nav navbar-nav navbar-right">
+					<button v-on:click="generateTestData" class="btn navbar-btn">Generate test data</button>
+				</ul>
+			</div>
+		</nav>
+
+		<!-- Page Content -->
+		<div class="container-fluid content">
+			<div class="row" style="margin-top: 10px;">
+				<div class="form-group column">
+					<label for="fromDate" class="col-sm-2 control-label">From</label>
+					<div class="col-sm-6">
+						<input class="form-control" id="fromDate" type="date"
+							value="2017-09-01"></input>
+					</div>
+				</div>
+				<div class="form-group column">
+					<label for="toDate" class="col-sm-2 control-label">To</label>
+					<div class="col-sm-6">
+						<input class="form-control" id="toDate" type="date"
+							value="2018-03-01"></input>
+					</div>
+				</div>
+				<div>
+					<button v-on:click="drawChart" type="button"
+						class="btn btn-primary col-sm-2" style="margin-left: 155px">Update
+						chart</button>
+				</div>
+			</div>
+
+			<div id="chartContainer" style="width: 900px; height: 500px"></div>
+		</div>
+	</div>
+</body>
+
+<script>
+	var vm = new Vue({
+		el : '#analytics',
+		data : {
+			message : '',
+			chartData: {},
+		},
+        mounted() {
+        	this.drawChart()
+        },
+        
+		methods : {
+	         drawChart: function() {
+	        	 var vm = this;
+	        	 axios.get('/analytics',{
+	        		 params: {
+	        		      fromDate: $( "#fromDate" ).val(),
+	        		      toDate: $( "#toDate" ).val()
+	        		    }
+	        	 })
+	        	  .then(function (response) {
+	        		  vm.chartData = response.data
+	        		  vm.renderChart();
+	        	  })
+	      		  .catch(function (error) {
+	      			vm.message="Error loading doctors!"
+	      		  })
+	          },
+	          
+	          renderChart: function(){
+	        	  var vm = this;
+		             // Define the chart to be drawn.
+		            var data = new google.visualization.DataTable();
+		            var data = google.visualization.arrayToDataTable(vm.chartData);
+		            
+		             // Set chart options
+		             var options = {'title' : 'Number of patients in different treatment areas for selected period',
+		                hAxis: {
+		                   title: 'Month'
+		                },
+		                vAxis: {
+		                   title: 'Number of patients'
+		                },   
+		                'width':900,
+		                'height':500	  
+		             };
+
+		             // Instantiate and draw the chart.
+		             var chart = new google.visualization.LineChart(document.getElementById('chartContainer'));
+		             chart.draw(data, options);
+	          },
+	          
+	          generateTestData: function(){
+	        	  var vm = this;
+		        	 axios.get('/generateTestData')
+		        	  .then(function (response) {
+		        		  vm.message = response.data;
+		        		  vm.drawChart();
+		        	  })
+		      		  .catch(function (error) {
+		      			vm.message="Error generating data!"
+		      		  })
+	          }
+		}
+	})
+</script>
+
+</html>

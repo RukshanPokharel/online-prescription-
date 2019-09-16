@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Prescription Management System</title>
+<meta charset="utf-8"></meta>
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"></link>
+<link rel="stylesheet" href="/main.css"></link>
+
+<!-- Bootstrap -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- jquery -->
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
+<!-- Vue -->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+	<div id="patient">
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand " href="#"><span><img
+							src="/brand-small.jpg" /></span><span style="padding-left: 2px;">Kapan
+							Hospital</span></a>
+				</div>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#"><span class="glyphicon glyphicon-user"></span>
+							{{patient.userName}} </a></li>
+					<li><a :href="'http://localhost:8080'"><span
+							class="glyphicon glyphicon-user"></span> Logout </a></li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="sidenav">
+			<a :href="'http://localhost:8080/patient/'+ patient.id"><span
+				style="margin-right: 10px;"
+				class="showopacity glyphicon glyphicon-home"></span>Home</a> <a
+				:href="'/patient/patient_history/'+ patient.id">History</a> <a
+				:href="'/patient/update_patient/' + patient.id">Personal details</a>
+		</div>
+
+		<!-- Page Content -->
+		<div class="container-fluid content">
+			<h2>Next appointment</h2>
+			<table class="table table-striped table-hover" style="width: 100%">
+				<thead>
+					<tr>
+						<th>Date</th>
+						<th>Time</th>
+						<th>Doctor</th>
+						<th>Address</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					<template v-for="appointment in appointments">
+					<tr>
+						<td>{{ appointment.date }}</td>
+						<td>{{ appointment.time }}</td>
+						<td>{{ appointment.doctor.fullName }}</td>
+						<td>{{ appointment.doctor.address.displayAddress }}</td>
+					</tr>
+					</template>
+
+				</tbody>
+			</table>
+
+			<h2>Book an appointment</h2>
+			<form class="form-horizontal">
+				<!-- Form start -->
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="doctor">Doctor</label>
+					<div class="col-sm-6">
+						<select id="doctor" v-model="selectedDoctor" class="form-control">
+							<option v-for="doctor in doctors" v-bind:value="doctor.id">
+								{{ doctor.fullName }}</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="date" class="col-sm-2 control-label">Preferred
+						date</label>
+					<div class="col-sm-6">
+						<input class="form-control" id="date" type="date" min="2018-04-30"></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="date" class="col-sm-2 control-label">Preferred
+						time</label>
+					<div class="col-sm-6">
+						<select id="time" v-model="selectedTime" class="form-control">
+							<option v-for="time in times" v-bind:value="time">{{
+								time }}</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+
+					<div id = "availabilityColor" style="color: red">{{appointmentAvailabilityMsg}}</div>
+					<button v-on:click="checkAvailability" type="button"
+						class="btn btn-primary col-sm-2" style="margin-left: 155px">Check
+						availability</button>
+					<button v-on:click="saveAppointment" type="button"
+						class="btn btn-primary col-sm-2" style="margin-left: 10px"
+						v-if="submitButtonEnable">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+
+<script> 
+      var vm = new Vue({
+        el: '#patient',
+        data: {
+          message:'',
+          appointmentAvailabilityMsg:'',
+          submitButtonEnable:false,
+          patient: {},
+          doctors: [],
+          appointments: [],
+          selectedDoctor:'',
+          selectedTime:'',
+          times: [
+               "10 - 11" ,
+               "11 - 12" ,
+               "12 - 13", 
+               "13 - 14",
+               "14 - 15"
+            ]
+        },
+        created () {
+            // fetch the data when the view is created
+            this.fetchData()
+          },
+        methods: {
+        	      
+          saveAppointment: function(){
+        	  var vm = this;
+        	  var doctor = vm.doctors.filter(function(dr){
+        	    if(dr.id == vm.selectedDoctor) 
+        	    	return dr;
+        	   
+        	  })[0]; // use first found doctor
+        	  
+        	  
+        		  axios.post('/appointment',{
+            		  patient: vm.patient,
+            		  doctor: doctor,
+            		  date: $( "#date" ).val(),
+            	      time: vm.selectedTime
+            	  })
+            	  .then(function (response) {
+                    vm.loadPatient(vm.patient.id)
+                    vm.selectedDoctor=''
+                    vm.selectedTime=''
+                    vm.submitButtonEnable=false;
+                    vm.appointmentAvailabilityMsg = ""
+                  })
+                  .catch(function (error) {
+                   vm.message=error.response.data
+                  });
+        	 
+        	  
+          },
+          
+          checkAvailability:function(){	  
+         	 axios.get('/appointment/check_appointment/doctor/'+vm.selectedDoctor,{
+         		 params:{
+         			 date:$( "#date" ).val(),
+		         	 time:vm.selectedTime
+         		 }
+         	 })
+         	  .then(function (response) {
+         		  var appointment = [];
+         		 appointment = response.data
+         		 if(appointment.length>0){
+         			vm.appointmentAvailabilityMsg = "Doctor is already booked at this time"
+         			vm.submitButtonEnable=false;
+         			document.getElementById('availabilityColor').style="color: red"
+         		 }
+         		 else{
+           			vm.submitButtonEnable=true;
+         			vm.appointmentAvailabilityMsg = "Doctor is available at this time"
+            		document.getElementById('availabilityColor').style="color: green"
+                 	
+            				
+         		 }
+         	  })
+       		  .catch(function (error) {
+       			vm.message="Error loading doctor availability!"
+       		  })
+          },
+          
+          fetchData: function(){
+        	  var vm = this;
+        	  var path = window.location.pathname;
+        	  var patientId = path.split("/")[2];
+			  this.loadDoctors();
+			  this.loadPatient(patientId);
+			  
+			 // $('#mytable').DataTable();
+          },
+          
+          loadDoctors : function(){
+        	 var vm = this;
+        	 axios.get('/doctor')
+        	  .then(function (response) {
+        		  vm.doctors = response.data
+        	  })
+      		  .catch(function (error) {
+      			vm.message="Error loading doctors!"
+      		  })
+          },
+          
+          loadPatient: function(patientId){
+        	  axios.get('/patient/'+patientId)
+        	  .then(function (response) {
+        		  vm.patient = response.data
+        	  })
+      		  .catch(function (error) {
+      			vm.message="Error loading patient ["+vm.patient.userName+"]";
+      		  })
+        	  
+        	  axios.get('/patient/'+patientId+'/appointments')
+        	  .then(function (response){
+        		  vm.appointments = response.data
+        	  })
+        	  .catch(function (error){
+        		  vm.message="Error loading appointments of patient ["+vm.patient.userName+"]";
+        	  })
+          }
+        }
+      })
+</script>
+
+</html>

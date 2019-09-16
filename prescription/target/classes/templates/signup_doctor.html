@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>prescription</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+
+<!-- Bootstrap -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- Vue -->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+<div id="signup" class="row">
+    <div class="col-md-6 col-sm-12 col-lg-6 col-md-offset-3">
+		<div class="panel panel-primary">
+			<div class="panel-heading">Enter Your Details Here</div>
+			<div class="panel-body">
+			
+			<p v-if="errors.length">
+		        <b>Please correct the following error(s):</b>
+		        <ul>
+		          <li v-for="error in errors">{{ error }}</li>
+		        </ul>
+			</p>
+			
+				<form name="myform">
+					<div class="form-group">
+						<label for="fullName">Full Name *</label>
+						<input v-model="doctor.fullName" name="fullName" id="fullName"  class="form-control" type="text"></input>
+					</div>
+					<div class="form-group">
+						<label for="dob">Date Of Birth *</label>
+						<input v-model="doctor.dob" id="dob" name="dob" class="form-control" type="date" max="2005-04-30" ></input>
+					</div>
+					<div class="form-group">
+						<label for="gender">Gender</label>
+						<select v-model="doctor.gender" name="gender" id="gender" class="form-control">
+							<option selected="true">Male</option>
+							<option>Female</option>
+							<option>Other</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="phone">Phone Number *</label>
+						<input v-model="doctor.phoneNumber" type="text" id="phone" name="phone" class="form-control"></input>
+					</div>
+					<div class="form-group">
+						<label for="myName">Email address</label>
+						<input v-model="doctor.email" id="email" name="email" class="form-control" type="text"></input>
+					</div>
+					<div class="form-group">
+						<label for="specialist">Specialist *</label>
+						<input v-model="doctor.specialist" id="specialist" name="specialist" class="form-control" type="text"></input>
+					</div>
+					<div class="form-group">
+						<label for="address">Address *</label>
+						<input v-model="address.addressLine1" id="addressLine1" name="addressLine1" class="form-control" type="text"></input>
+					</div>
+					<div class="form-group">
+						<label for="address">City *</label>
+						<input v-model="address.city" id="city" name="city" class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="address">State *</label>
+						<input v-model="address.state" id="state" name="state" class="form-control" type="text" ></input>
+					</div>
+					<div class="form-group">
+						<label for="userName">User Name *</label>
+						<input v-model="doctor.userName" id="userName" name="userName" class="form-control" type="text"></input>
+					</div>
+					<div class="form-group">
+						<label for="password">Password *</label>
+						<input id="password" name="password" class="form-control" type="password" ></input>
+					</div>
+				
+					<div class="form-group">
+						<label for="repeatPassword">Repeat Password *</label>
+						<input v-model="doctor.password" id="repeatPassword" name="repeatPassword" class="form-control" type="password" ></input>
+					</div>
+					
+					<button v-on:click="postDoctor" id="submit" type="submit" value="submit" class="btn btn-primary center">Submit</button>
+			
+				</form>
+
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+
+
+
+<script>
+      var vm = new Vue({
+        el: '#signup',
+        data: {
+          message: '',
+          doctor: {},
+          address: {},
+          errors:[]
+        },
+        methods: {
+        	
+        	checkForm:function() {
+                var vm = this;
+                   
+                   this.errors = [];
+                   if(!vm.doctor.fullName) vm.errors.push("Name required.");
+                   if(!vm.doctor.email) vm.errors.push("Email required.");
+                   if(!vm.doctor.specialist) vm.errors.push("Specialist required.");
+                   
+                   if(!vm.doctor.phoneNumber) vm.errors.push("Phone required.");
+        
+                   
+                   if(!$.isNumeric(vm.doctor.phoneNumber)) vm.errors.push("Phone no must be numeric");
+                   if(!(vm.doctor.phoneNumber > 0)) vm.errors.push("Phone no must be whole number");
+                   
+        
+                   
+                   if(!vm.address.addressLine1) vm.errors.push("AddressLine1 required.");
+                   if(!vm.address.city) vm.errors.push("City required.");
+                   if(!vm.address.state) vm.errors.push("State required.");
+                   if(!vm.doctor.userName) vm.errors.push("Username required.");
+                   if(!vm.doctor.password) vm.errors.push("Password required.");
+                   
+                   if( vm.errors.length == 0){
+                       return true;
+                        }else {
+                           return false;
+                        }
+                 },
+        	
+        	postDoctor:function(e){
+        		e.preventDefault();
+        		
+        		if(!this.checkForm()){
+                    return;
+                }
+        		
+                var vm = this;
+                vm.doctor.address = vm.address;
+                axios.post('/doctor', 
+				  vm.doctor
+                )
+                .then(function (response) {
+                  vm.message="user successfully saved!!";
+                  window.location.href = '/'
+                })
+                .catch(function (error) {
+                 vm.message=error.response.data
+                });
+
+        	}
+        }
+      })
+</script>
+</html>	
+

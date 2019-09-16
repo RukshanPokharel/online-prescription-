@@ -1,0 +1,45 @@
+*{
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the top navigation bar */
+.navigation {
+    overflow: hidden;
+    background-color: #ffff99;
+}
+
+/* Style the navigation links */
+.navigation a {
+    float: left;
+    display: block;
+    color: grey;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Change color on hover */
+.navigation a:hover {
+    background-color: #ffffe6;
+    color: black;
+	 text-decoration: none;
+}
+
+/* Style the content */
+.content {
+    background-color: #ffffe6;
+    padding: 10px;
+    height: auto; /* Should be removed. Only for demonstration */
+}
+
+.copyright{
+	background-color: #f1f1f1;
+    padding: 10px;
+	color:grey;
+}
